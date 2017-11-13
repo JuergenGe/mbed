@@ -108,7 +108,7 @@
 #endif /* HSE_VALUE */
 
 #if !defined  (HSE_STARTUP_TIMEOUT)
-  #define HSE_STARTUP_TIMEOUT    ((uint32_t)5000U)   /*!< Time out for HSE start up, in ms */
+  #define HSE_STARTUP_TIMEOUT    100U      /*!< Time out for HSE start up, in ms */
 #endif /* HSE_STARTUP_TIMEOUT */
 
 /**
@@ -431,16 +431,8 @@
 
 /* Exported macro ------------------------------------------------------------*/
 #ifdef  USE_FULL_ASSERT
-/**
-  * @brief  The assert_param macro is used for function's parameters check.
-  * @param  expr: If expr is false, it calls assert_failed function
-  *         which reports the name of the source file and the source
-  *         line number of the call that failed.
-  *         If expr is true, it returns no value.
-  * @retval None
-  */
-  #include "mbed_assert.h"
-  #define assert_param(expr) MBED_ASSERT(expr)
+/* ALL MBED targets use same stm32_assert.h */
+#include "stm32_assert.h"
 #else
   #define assert_param(expr) ((void)0U)
 #endif /* USE_FULL_ASSERT */

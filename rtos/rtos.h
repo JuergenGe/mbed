@@ -25,6 +25,7 @@
 #ifndef RTOS_H
 #define RTOS_H
 
+#include "mbed_rtos_storage.h"
 #include "rtos/Thread.h"
 #include "rtos/Mutex.h"
 #include "rtos/RtosTimer.h"
@@ -32,6 +33,8 @@
 #include "rtos/Mail.h"
 #include "rtos/MemoryPool.h"
 #include "rtos/Queue.h"
+#include "rtos/EventFlags.h"
+#include "rtos/ConditionVariable.h"
 
 using namespace rtos;
 

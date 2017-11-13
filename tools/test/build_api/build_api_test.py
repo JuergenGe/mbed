@@ -20,10 +20,13 @@ from collections import namedtuple
 from mock import patch, MagicMock
 from tools.build_api import prepare_toolchain, build_project, build_library,\
     scan_resources
+from tools.toolchains import TOOLCHAINS
 
 """
 Tests for build_api.py
 """
+make_mock_target = namedtuple(
+    "Target", "init_hooks name features core supported_toolchains")
 
 class BuildApiTests(unittest.TestCase):
     """
@@ -82,9 +85,8 @@ class BuildApiTests(unittest.TestCase):
         :return:
         """
         app_config = "app_config"
-        mock_target = namedtuple("Target",
-                                 "init_hooks name features core")(lambda _, __ : None,
-                                                                  "Junk", [], "Cortex-M3")
+        mock_target = make_mock_target(lambda _, __ : None,
+                                       "Junk", [], "Cortex-M3", TOOLCHAINS)
         mock_config_init.return_value = namedtuple(
             "Config", "target has_regions name")(mock_target, False, None)
 
@@ -102,9 +104,8 @@ class BuildApiTests(unittest.TestCase):
         :param mock_config_init: mock of Config __init__
         :return:
         """
-        mock_target = namedtuple("Target",
-                                 "init_hooks name features core")(lambda _, __ : None,
-                                                                  "Junk", [], "Cortex-M3")
+        mock_target = make_mock_target(lambda _, __ : None,
+                                       "Junk", [], "Cortex-M3", TOOLCHAINS)
         mock_config_init.return_value = namedtuple(
             "Config", "target has_regions name")(mock_target, False, None)
 
@@ -131,7 +132,7 @@ class BuildApiTests(unittest.TestCase):
         mock_exists.return_value = False
         mock_prepare_toolchain().link_program.return_value = 1, 2
         mock_prepare_toolchain().config = namedtuple(
-            "Config", "has_regions name")(None, None)
+            "Config", "has_regions name lib_config_data")(None, None, {})
 
         build_project(self.src_paths, self.build_path, self.target,
                       self.toolchain_name, app_config=app_config)
@@ -160,7 +161,7 @@ class BuildApiTests(unittest.TestCase):
         # Needed for the unpacking of the returned value
         mock_prepare_toolchain().link_program.return_value = 1, 2
         mock_prepare_toolchain().config = namedtuple(
-            "Config", "has_regions name")(None, None)
+            "Config", "has_regions name lib_config_data")(None, None, {})
 
         build_project(self.src_paths, self.build_path, self.target,
                       self.toolchain_name)

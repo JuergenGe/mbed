@@ -1,6 +1,4 @@
 
-/** \addtogroup platform */
-/** @{*/
 /*
  * Copyright (c) 2015-2016, ARM Limited, All Rights Reserved
  * SPDX-License-Identifier: Apache-2.0
@@ -29,6 +27,12 @@
 extern "C" {
 #endif
 
+/** \addtogroup platform */
+/** @{*/
+/**
+ * \defgroup platform_critical critical section function
+ * @{
+ */
 
 /** Determine the current interrupts enabled state
   *
@@ -40,6 +44,17 @@ extern "C" {
   * @return true if interrupts are enabled, false otherwise
   */
 bool core_util_are_interrupts_enabled(void);
+
+/** Determine if this code is executing from an interrupt
+  *
+  * This function can be called to determine if the code is running on interrupt context.
+  * @note
+  * NOTE:
+  * This function works for both cortex-A and cortex-M, although the underlyng implementation
+  * differs.
+  * @return true if in an isr, false otherwise
+  */
+bool core_util_is_isr_active(void);
 
 /** Mark the start of a critical section
   *
@@ -352,8 +367,11 @@ void *core_util_atomic_decr_ptr(void **valuePtr, ptrdiff_t delta);
 #ifdef __cplusplus
 } // extern "C"
 #endif
+/**@}*/
 
+/**@}*/
 
 #endif // __MBED_UTIL_CRITICAL_H__
 
-/** @}*/
+
+

@@ -1,6 +1,7 @@
 
 /** \addtogroup platform */
 /** @{*/
+
 /* mbed Microcontroller Library
  * Copyright (c) 2006-2016 ARM Limited
  *
@@ -34,6 +35,11 @@ enum {
     MBED_MEM_TRACE_CALLOC,
     MBED_MEM_TRACE_FREE
 };
+
+/**
+ * \defgroup platform_mem_trace mem_trace functions
+ * @{
+ */
 
 /* Prefix for the output of the default tracer */
 #define MBED_MEM_DEFAULT_TRACER_PREFIX  "#"
@@ -110,12 +116,12 @@ void mbed_mem_trace_free(void *ptr, void *caller);
  * easily parsable by an external tool. For each memory operation, the callback
  * outputs a line that begins with "#<op>:<0xresult>;<0xcaller>-":
  *
- * - 'op' identifies the memory operation ('m' for 'malloc', 'r' for 'realloc',
- *   'c' for 'calloc' and 'f' for 'free').
- * - 'result' (base 16) is the result of the memor operation. This is always NULL
- *   for 'free', since 'free' doesn't return anything.
- * - 'caller' (base 16) is the caller of the memory operation. Note that the value
- *   of 'caller' might be unreliable.
+ * @param op        identifies the memory operation ('m' for 'malloc', 'r' for 'realloc',
+ *                  'c' for 'calloc' and 'f' for 'free').
+ * @param res       (base 16) is the result of the memor operation. This is always NULL
+ *                  for 'free', since 'free' doesn't return anything.
+ * @param caller    (base 16) is the caller of the memory operation. Note that the value
+ *                  of 'caller' might be unreliable.
  *
  * The rest of the output depends on the operation being traced:
  *
@@ -132,6 +138,8 @@ void mbed_mem_trace_free(void *ptr, void *caller);
  *   0x602f with the 'ptr' argument equal to 0x20003240.
  */
 void mbed_mem_trace_default_callback(uint8_t op, void *res, void *caller, ...);
+
+/** @}*/
 
 #ifdef __cplusplus
 }
