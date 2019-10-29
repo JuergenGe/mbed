@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32f746xx.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date    30-December-2016
   * @brief   CMSIS Cortex-M7 Device Peripheral Access Layer Header File.
   *
   *          This file contains:
@@ -9670,8 +9668,6 @@ typedef struct
 /*                                    QUADSPI                                 */
 /*                                                                            */
 /******************************************************************************/
-/* QUADSPI IP version */
-#define QSPI1_V1_0
 /*****************  Bit definition for QUADSPI_CR register  *******************/
 #define QUADSPI_CR_EN_Pos                (0U)                                  
 #define QUADSPI_CR_EN_Msk                (0x1U << QUADSPI_CR_EN_Pos)           /*!< 0x00000001 */

@@ -22,9 +22,9 @@
 #include "SingletonPtr.h"
 #include <stdio.h>
 
-#ifdef MBED_RTOS_SINGLE_THREAD
-  #error [NOT_SUPPORTED] test not supported for single threaded enviroment
-#endif
+#if defined(MBED_RTOS_SINGLE_THREAD) || !DEVICE_USTICKER
+#error [NOT_SUPPORTED] Test not supported for single threaded enviroment. UsTicker need to be enabled for this test.
+#else
 
 using namespace utest::v1;
 
@@ -33,21 +33,24 @@ static uint32_t instance_count = 0;
 
 class TestClass {
 public:
-    TestClass() {
-        Thread::wait(500);
+    TestClass()
+    {
+        ThisThread::sleep_for(500);
         instance_count++;
     }
 
-    void do_something() {
-        Thread::wait(100);
+    void do_something()
+    {
+        ThisThread::sleep_for(100);
     }
 
-    ~TestClass() {
+    ~TestClass()
+    {
         instance_count--;
     }
 };
 
-static TestClass* get_test_class()
+static TestClass *get_test_class()
 {
     static TestClass tc;
     return &tc;
@@ -58,11 +61,13 @@ static SingletonPtr<TestClass> test_class;
 static void main_func_race()
 {
     get_test_class();
+    TEST_ASSERT_EQUAL_UINT32(1, instance_count);
 }
 
 static void main_class_race()
 {
     test_class->do_something();
+    TEST_ASSERT_EQUAL_UINT32(1, instance_count);
 }
 
 void test_case_func_race()
@@ -74,7 +79,7 @@ void test_case_func_race()
     // Start start first thread
     t1.start(cb);
     // Start second thread while the first is inside the constructor
-    Thread::wait(250);
+    ThisThread::sleep_for(250);
     t2.start(cb);
 
     // Wait for the threads to finish
@@ -96,7 +101,7 @@ void test_case_class_race()
     // Start start first thread
     t1.start(cb);
     // Start second thread while the first is inside the constructor
-    Thread::wait(250);
+    ThisThread::sleep_for(250);
     t2.start(cb);
 
     // Wait for the threads to finish
@@ -126,3 +131,5 @@ int main()
 {
     Harness::run(specification);
 }
+
+#endif // defined(MBED_RTOS_SINGLE_THREAD) || !DEVICE_USTICKER

@@ -94,9 +94,10 @@ static void i2c_enable_vector_interrupt(i2c_t *obj, uint32_t handler, int enable
 static void i2c_rollback_vector_interrupt(i2c_t *obj);
 #endif
 
-#define TRANCTRL_STARTED        (1)
-#define TRANCTRL_NAKLASTDATA    (1 << 1)
-#define TRANCTRL_LASTDATANAKED  (1 << 2)
+#define TRANCTRL_STARTED        (1)         // Guard I2C ISR from data transfer prematurely
+#define TRANCTRL_NAKLASTDATA    (1 << 1)    // Request NACK on last data
+#define TRANCTRL_LASTDATANAKED  (1 << 2)    // Last data NACKed
+#define TRANCTRL_RECVDATA       (1 << 3)    // Receive data available
 
 uint32_t us_ticker_read(void);
 
@@ -110,16 +111,19 @@ void i2c_init(i2c_t *obj, PinName sda, PinName scl)
     const struct nu_modinit_s *modinit = get_modinit(obj->i2c.i2c, i2c_modinit_tab);
     MBED_ASSERT(modinit != NULL);
     MBED_ASSERT(modinit->modname == obj->i2c.i2c);
-    
-    // Reset this module
-    SYS_ResetModule(modinit->rsetidx);
-    
-    // Enable IP clock
-    CLK_EnableModuleClock(modinit->clkidx);
+
+    obj->i2c.pin_sda = sda;
+    obj->i2c.pin_scl = scl;
 
     pinmap_pinout(sda, PinMap_I2C_SDA);
     pinmap_pinout(scl, PinMap_I2C_SCL);
-    
+
+    // Enable IP clock
+    CLK_EnableModuleClock(modinit->clkidx);
+
+    // Reset this module
+    SYS_ResetModule(modinit->rsetidx);
+
 #if DEVICE_I2C_ASYNCH
     obj->i2c.dma_usage = DMA_USAGE_NEVER;
     obj->i2c.event = 0;
@@ -230,6 +234,26 @@ int i2c_byte_write(i2c_t *obj, int data)
     else {
         return 0;
     }
+}
+
+const PinMap *i2c_master_sda_pinmap()
+{
+    return PinMap_I2C_SDA;
+}
+
+const PinMap *i2c_master_scl_pinmap()
+{
+    return PinMap_I2C_SCL;
+}
+
+const PinMap *i2c_slave_sda_pinmap()
+{
+    return PinMap_I2C_SDA;
+}
+
+const PinMap *i2c_slave_scl_pinmap()
+{
+    return PinMap_I2C_SCL;
 }
 
 #if DEVICE_I2CSLAVE
@@ -621,7 +645,10 @@ static void i2c_irq(i2c_t *obj)
             if ((obj->i2c.tran_ctrl & TRANCTRL_STARTED) && obj->i2c.tran_pos) {
                 if (obj->i2c.tran_pos < obj->i2c.tran_end) {
                     if (status == 0x50 || status == 0x58) {
-                        *obj->i2c.tran_pos ++ = I2C_GET_DATA(i2c_base);
+                        if (obj->i2c.tran_ctrl & TRANCTRL_RECVDATA) {
+                            *obj->i2c.tran_pos ++ = I2C_GET_DATA(i2c_base);
+                            obj->i2c.tran_ctrl &= ~TRANCTRL_RECVDATA;
+                        }
                     }
                     
                     if (status == 0x58) {
@@ -633,6 +660,10 @@ static void i2c_irq(i2c_t *obj)
 #endif
                         i2c_fsm_tranfini(obj, 1);
                     }
+                    else if (obj->i2c.tran_pos == obj->i2c.tran_end) {
+                        obj->i2c.tran_ctrl &= ~TRANCTRL_STARTED;
+                        i2c_disable_int(obj);
+                    }
                     else {
                         uint32_t i2c_ctl = I2C_CTL_SI_Msk | I2C_CTL_AA_Msk;
                         if ((obj->i2c.tran_end - obj->i2c.tran_pos) == 1 &&
@@ -641,6 +672,7 @@ static void i2c_irq(i2c_t *obj)
                             i2c_ctl &= ~I2C_CTL_AA_Msk;
                         }
                         I2C_SET_CONTROL_REG(i2c_base, i2c_ctl);
+                        obj->i2c.tran_ctrl |= TRANCTRL_RECVDATA;
                     }
                 }
                 else {
@@ -699,7 +731,10 @@ static void i2c_irq(i2c_t *obj)
             if ((obj->i2c.tran_ctrl & TRANCTRL_STARTED) && obj->i2c.tran_pos) {
                 if (obj->i2c.tran_pos < obj->i2c.tran_end) {
                     if (status == 0x80 || status == 0x88) {
-                        *obj->i2c.tran_pos ++ = I2C_GET_DATA(i2c_base);
+                        if (obj->i2c.tran_ctrl & TRANCTRL_RECVDATA) {
+                            *obj->i2c.tran_pos ++ = I2C_GET_DATA(i2c_base);
+                            obj->i2c.tran_ctrl &= ~TRANCTRL_RECVDATA;
+                        }
                     }
                     
                     if (status == 0x88) {
@@ -712,6 +747,10 @@ static void i2c_irq(i2c_t *obj)
                         obj->i2c.slaveaddr_state = NoData;
                         i2c_fsm_reset(obj, I2C_CTL_SI_Msk | I2C_CTL_AA_Msk);
                     }
+                    else if (obj->i2c.tran_pos == obj->i2c.tran_end) {
+                        obj->i2c.tran_ctrl &= ~TRANCTRL_STARTED;
+                        i2c_disable_int(obj);
+                    }
                     else {
                         uint32_t i2c_ctl = I2C_CTL_SI_Msk | I2C_CTL_AA_Msk;
                         if ((obj->i2c.tran_end - obj->i2c.tran_pos) == 1 &&
@@ -720,6 +759,7 @@ static void i2c_irq(i2c_t *obj)
                             i2c_ctl &= ~I2C_CTL_AA_Msk;
                         }
                         I2C_SET_CONTROL_REG(i2c_base, i2c_ctl);
+                        obj->i2c.tran_ctrl |= TRANCTRL_RECVDATA;
                     }
                 }
                 else {
@@ -744,7 +784,10 @@ static void i2c_irq(i2c_t *obj)
             if ((obj->i2c.tran_ctrl & TRANCTRL_STARTED) && obj->i2c.tran_pos) {
                 if (obj->i2c.tran_pos < obj->i2c.tran_end) {
                     if (status == 0x90 || status == 0x98) {
-                        *obj->i2c.tran_pos ++ = I2C_GET_DATA(i2c_base);
+                        if (obj->i2c.tran_ctrl & TRANCTRL_RECVDATA) {
+                            *obj->i2c.tran_pos ++ = I2C_GET_DATA(i2c_base);
+                            obj->i2c.tran_ctrl &= ~TRANCTRL_RECVDATA;
+                        }
                     }
                     
                     if (status == 0x98) {
@@ -757,6 +800,10 @@ static void i2c_irq(i2c_t *obj)
                         obj->i2c.slaveaddr_state = NoData;
                         i2c_fsm_reset(obj, I2C_CTL_SI_Msk | I2C_CTL_AA_Msk);
                     }
+                    else if (obj->i2c.tran_pos == obj->i2c.tran_end) {
+                        obj->i2c.tran_ctrl &= ~TRANCTRL_STARTED;
+                        i2c_disable_int(obj);
+                    }
                     else {
                         uint32_t i2c_ctl = I2C_CTL_SI_Msk | I2C_CTL_AA_Msk;
                         if ((obj->i2c.tran_end - obj->i2c.tran_pos) == 1 &&
@@ -765,6 +812,7 @@ static void i2c_irq(i2c_t *obj)
                             i2c_ctl &= ~I2C_CTL_AA_Msk;
                         }
                         I2C_SET_CONTROL_REG(i2c_base, i2c_ctl);
+                        obj->i2c.tran_ctrl |= TRANCTRL_RECVDATA;
                     }
                 }
                 else {

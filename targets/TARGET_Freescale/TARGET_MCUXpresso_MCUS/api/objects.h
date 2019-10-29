@@ -95,7 +95,15 @@ struct flash_s {
     flash_config_t flash_config;
 };
 
+#if DEVICE_QSPI
+struct qspi_s {
+    uint32_t instance;
+};
+#endif
+
 #include "gpio_object.h"
+
+#include "us_ticker_defines.h"
 
 #ifdef __cplusplus
 }

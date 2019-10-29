@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32f7xx_hal_conf.h
   * @author  MCD Application Team
-  * @version V1.2.2
-  * @date    14-April-2017
   * @brief   HAL configuration file.
   ******************************************************************************
   * @attention
@@ -52,7 +50,9 @@
   */
 #define HAL_MODULE_ENABLED
 #define HAL_ADC_MODULE_ENABLED
-#define HAL_CAN_MODULE_ENABLED
+// MBED: use the legacy module for now
+//#define HAL_CAN_MODULE_ENABLED
+#define HAL_CAN_LEGACY_MODULE_ENABLED
 #define HAL_CEC_MODULE_ENABLED
 #define HAL_CRC_MODULE_ENABLED
 #define HAL_CRYP_MODULE_ENABLED
@@ -164,8 +164,8 @@
 #define  VDD_VALUE                    3300U /*!< Value of VDD in mv */
 #define  TICK_INT_PRIORITY            0x0FU /*!< tick interrupt priority */
 #define  USE_RTOS                     0U
-#define  PREFETCH_ENABLE              1U
-#define  ART_ACCLERATOR_ENABLE        1U /* To enable instruction cache and prefetch */
+#define  PREFETCH_ENABLE              1U /* To enable prefetch */
+#define  ART_ACCLERATOR_ENABLE        1U /* To enable ART Accelerator */
 
 /* ########################## Assert Selection ############################## */
 /**
@@ -189,9 +189,14 @@
 /* Definition of the Ethernet driver buffers size and count */
 #define ETH_RX_BUF_SIZE                ETH_MAX_PACKET_SIZE /* buffer size for receive               */
 #define ETH_TX_BUF_SIZE                ETH_MAX_PACKET_SIZE /* buffer size for transmit              */
-#define ETH_RXBUFNB                    4U       /* 4 Rx buffers of size ETH_RX_BUF_SIZE  */
-#define ETH_TXBUFNB                    4U       /* 4 Tx buffers of size ETH_TX_BUF_SIZE  */
 
+#ifdef MBED_CONF_STM32_EMAC_ETH_RXBUFNB
+#define ETH_RXBUFNB                       MBED_CONF_STM32_EMAC_ETH_RXBUFNB  /* Rx buffers of size ETH_RX_BUF_SIZE  */
+#endif
+
+#ifdef MBED_CONF_STM32_EMAC_ETH_TXBUFNB
+#define ETH_TXBUFNB                       MBED_CONF_STM32_EMAC_ETH_TXBUFNB  /* Tx buffers of size ETH_TX_BUF_SIZE  */
+#endif
 /* Section 2: PHY configuration section */
 
 /* DP83848 PHY Address*/
@@ -277,6 +282,10 @@
 #ifdef HAL_CAN_MODULE_ENABLED
   #include "stm32f7xx_hal_can.h"
 #endif /* HAL_CAN_MODULE_ENABLED */
+
+#ifdef HAL_CAN_LEGACY_MODULE_ENABLED
+  #include "stm32f7xx_hal_can_legacy.h"
+#endif /* HAL_CAN_LEGACY_MODULE_ENABLED */
 
 #ifdef HAL_CEC_MODULE_ENABLED
   #include "stm32f7xx_hal_cec.h"
@@ -442,8 +451,19 @@
 #ifdef  USE_FULL_ASSERT
 /* ALL MBED targets use same stm32_assert.h */
 #include "stm32_assert.h"
+/**
+  * @brief  The assert_param macro is used for function's parameters check.
+  * @param  expr If expr is false, it calls assert_failed function
+  *         which reports the name of the source file and the source
+  *         line number of the call that failed. 
+  *         If expr is true, it returns no value.
+  * @retval None
+  */
+//#define assert_param(expr) ((expr) ? (void)0 : assert_failed((uint8_t *)__FILE__, __LINE__))
+/* Exported functions ------------------------------------------------------- */
+//void assert_failed(uint8_t* file, uint32_t line);
 #else
-  #define assert_param(expr) ((void)0)
+  #define assert_param(expr) ((void)0U)
 #endif /* USE_FULL_ASSERT */
 
 

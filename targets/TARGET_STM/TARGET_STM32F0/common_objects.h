@@ -34,6 +34,8 @@
 #include "PortNames.h"
 #include "PeripheralNames.h"
 #include "PinNames.h"
+#include "stm32f0xx_ll_usart.h"
+#include "stm32f0xx_ll_tim.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,7 +59,7 @@ struct spi_s {
     PinName pin_mosi;
     PinName pin_sclk;
     PinName pin_ssel;
-#ifdef DEVICE_SPI_ASYNCH
+#if DEVICE_SPI_ASYNCH
     uint32_t event;
     uint8_t transfer_type;
 #endif
@@ -136,12 +138,18 @@ struct can_s {
 };
 #endif
 
+#if DEVICE_FLASH
+struct flash_s {
+    /*  nothing to be stored for now */
+    uint32_t dummy;
+};
+#endif
+
 #ifdef __cplusplus
 }
 #endif
 
 /* STM32F0 HAL doesn't provide this API called in rtc_api.c */
-#define __HAL_RCC_RTC_CLKPRESCALER(__RTCCLKSource__)
 #define RTC_WKUP_IRQn RTC_IRQn
 
 #endif

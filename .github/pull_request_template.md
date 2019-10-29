@@ -1,39 +1,66 @@
-Notes:
-- Pull requests will not be accepted until the submitter has agreed to the [contributer agreement](https://github.com/ARMmbed/mbed-os/blob/master/CONTRIBUTING.md).
-- This is just a template, so feel free to use/remove the unnecessary things
+<!--
+For more information on the requirements for pull requests, please see [the contributing guidelines](https://os.mbed.com/docs/mbed-os/latest/contributing/workflow.html#pull-request-types).
+-->
+### Description (*required*)
 
-## Description
+<!--
+    Required
+    Add here detailed changes summary, testing results, dependencies
+    Good example: https://os.mbed.com/docs/mbed-os/latest/contributing/workflow.html (Pull request template)
+-->
+##### Summary of change (*What the change is for and why*)
 
-A few sentences describing the overall goals of the pull request's commits.
 
-## Status
+##### Documentation (*Details of any document updates required*)
 
-**READY/IN DEVELOPMENT/HOLD**
+----------------------------------------------------------------------------------------------------------------
+### Pull request type (*required*)
 
-## Migrations
+<!--
+    Required
+    Please add only one X to one of the following types. Do not fill multiple types (split the pull request otherwise).
+    Please note this is not a GitHub task list, indenting the boxes or changing the format to add a '.' or '*' in front
+    of them would change the meaning incorrectly. The only changes to be made are to add a description text under the
+    description heading and to add a 'x' to the correct box.
+-->
+    [] Patch update (Bug fix / Target update / Docs update / Test update / Refactor)
+    [] Feature update (New feature / Functionality change / New API)
+    [] Major update (Breaking change E.g. Return code change / API behaviour change)
 
-If this PR changes any APIs or behaviors, give a short description of what *API users* should do when this PR is merged.
+----------------------------------------------------------------------------------------------------------------
+### Test results (*required*)
 
-YES | NO
+<!--
+    Required
+    For example, add test results for new target
+-->
+    [] No Tests required for this change (E.g docs only update)
+    [] Covered by existing mbed-os tests (Greentea or Unittest)
+    [] Tests / results supplied as part of this PR
+    
+    
+----------------------------------------------------------------------------------------------------------------
+### Reviewers (*optional*)
 
-## Related PRs
+<!--
+    Optional
+    Request additional reviewers with @username
+-->
 
-List related PRs against other branches:
+----------------------------------------------------------------------------------------------------------------
+### Release Notes (*required for feature/major PRs*)
 
-branch | PR
------- | ------
-other_pr_production | [link]()
-other_pr_master | [link]()
+<!--
+    All 3 sections are compulsory for Major PR types. For Feature PRs only the summary section is required.
+    This section is automatically added to release notes. Please fill in each sub-section with sufficient detail for a user.
+    For more information, please see [the contributing guidelines](https://os.mbed.com/docs/mbed-os/latest/contributing/workflow.html#pull-request-types). 
+-->
 
-## Todos
+##### Summary of changes
 
-- [ ] Tests
-- [ ] Documentation
+##### Impact of changes
 
-## Deploy notes
+##### Migration actions required
 
-Notes regarding the deployment of this PR. These should note any required changes in the build environment, tools, compilers and so on.
 
-## Steps to test or reproduce
 
-Outline the steps to test or reproduce the PR here.
